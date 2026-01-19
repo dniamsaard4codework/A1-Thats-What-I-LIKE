@@ -105,6 +105,8 @@ Open http://localhost:5000 in your browser.
 
 ## Task 3: Web Application (2 points)
 
+![app gif](app_gif.gif)
+
 **Objective**: Build a search interface to find similar contexts using word embeddings.
 
 ### Features:
