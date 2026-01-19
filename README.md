@@ -80,19 +80,19 @@ Open http://localhost:5000 in your browser.
 
 | Model | Window | Loss | Time | Syntactic Acc | Semantic Acc |
 |-------|--------|------|------|---------------|--------------|
-| Skipgram | 2 | 19.80 | 375s | 0.00% | 0.00% |
-| Skipgram NEG | 2 | 6.44 | 344s | 0.00% | 0.00% |
-| GloVe | 2 | 1038.03 | 10s | 0.00% | 0.00% |
+| Skipgram | 2 | 19.03 | 236.98s | 0.00% | 0.00% |
+| Skipgram NEG | 2 | 7.63 | 237.50s | 0.00% | 0.00% |
+| GloVe | 2 | 330.79 | 8.97s | 0.00% | 0.00% |
 | GloVe (Gensim) | - | - | - | 55.45% | 93.87% |
 
 ### Similarity Correlation (WordSim353):
 
 | Model | Spearman Corr | MSE |
 |-------|---------------|-----|
-| Skipgram | ~0.15 | 0.1543 |
-| Skipgram NEG | ~0.15 | 0.1537 |
-| GloVe | ~0.16 | 0.1589 |
-| GloVe (Gensim) | ~0.60 | 0.0441 |
+| Skipgram | ~0.04 | 0.1565 |
+| Skipgram NEG | ~-0.06 | 0.1548 |
+| GloVe | ~0.17 | 0.1420 |
+| GloVe (Gensim) | ~0.48 | 0.0441 |
 
 ### Key Findings:
 - **0% accuracy is expected** — our small corpus (~4.6k sentences) doesn't contain most analogy words like country capitals
