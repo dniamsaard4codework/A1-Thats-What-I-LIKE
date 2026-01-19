@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Embedding Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        header {
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .model-info {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .model-info span {
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        .search-section {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #fafafa;
+            color: #1a1a1a;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #1a1a1a;
+            background: #fff;
+        }
+
+        .search-input::placeholder {
+            color: #999;
+        }
+
+        .search-btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            background: #1a1a1a;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-btn:hover {
+            background: #333;
+        }
+
+        .model-selector {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .model-label {
+            color: #666;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+        }
+
+        .model-btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            background: transparent;
+            color: #666;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .model-btn:hover {
+            border-color: #1a1a1a;
+            color: #1a1a1a;
+        }
+
+        .model-btn.active {
+            background: #1a1a1a;
+            color: #fff;
+            border-color: #1a1a1a;
+        }
+
+        .results-section {
+            margin-top: 1.5rem;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .results-title {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .results-query {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .result-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-rank {
+            width: 1.75rem;
+            height: 1.75rem;
+            background: #f0f0f0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #666;
+            flex-shrink: 0;
+        }
+
+        .result-content {
+            flex: 1;
+        }
+
+        .result-text {
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .result-score {
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        .result-score span {
+            color: #1a1a1a;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e5e5;
+            border-top-color: #1a1a1a;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .model-loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .error-msg {
+            background: #fff5f5;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 1rem;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #888;
+            font-size: 0.8rem;
+            border-top: 1px solid #e5e5e5;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 600px) {
+            .search-box {
+                flex-direction: column;
+            }
+            .search-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Word Embedding Search</h1>
+            <p class="subtitle">Find similar contexts using trained word embeddings</p>
+            <div class="model-info">
+                Current: <span id="currentModel">{{ model_name or 'Not Loaded' }}</span>
+            </div>
+        </header>
+
+        <section class="search-section">
+            <div class="search-box">
+                <input type="text" 
+                       class="search-input" 
+                       id="searchInput" 
+                       placeholder="Enter search query..."
+                       autocomplete="off">
+                <button class="search-btn" onclick="search()">Search</button>
+            </div>
+
+            <div class="model-selector">
+                <span class="model-label">Model:</span>
+                <button class="model-btn active" data-model="skipgram" onclick="switchModel('skipgram')">Skipgram</button>
+                <button class="model-btn" data-model="skipgram_neg" onclick="switchModel('skipgram_neg')">Skipgram NEG</button>
+                <button class="model-btn" data-model="glove" onclick="switchModel('glove')">GloVe</button>
+                <button class="model-btn" data-model="gensim_glove" onclick="switchModel('gensim_glove')">GloVe (Gensim)</button>
+            </div>
+        </section>
+
+        <section class="results-section" id="resultsSection">
+            <div class="empty-state">Enter a query to search</div>
+        </section>
+    </div>
+
+    <footer>
+        <p>A1: That's What I LIKE — NLU Assignment by Dechathon Niamsa-ard [st126235]</p>
+    </footer>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const resultsSection = document.getElementById('resultsSection');
+        const currentModel = document.getElementById('currentModel');
+
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') search();
+        });
+
+        async function search() {
+            const query = searchInput.value.trim();
+            if (!query) {
+                showError('Please enter a search query');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+
+                if (data.error && data.results.length === 0) {
+                    showError(data.error);
+                } else {
+                    showResults(data.results, query);
+                }
+            } catch (error) {
+                showError('Search failed. Please try again.');
+            }
+        }
+
+        async function switchModel(modelType) {
+            const modelSelector = document.querySelector('.model-selector');
+            modelSelector.classList.add('model-loading');
+            
+            document.querySelectorAll('.model-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.model === modelType) btn.classList.add('active');
+            });
+
+            currentModel.innerHTML = '<span class="loading-spinner"></span>Loading...';
+            
+            // For Gensim model, show longer loading message
+            if (modelType === 'gensim_glove') {
+                currentModel.innerHTML = '<span class="loading-spinner"></span>Loading Gensim (may take a moment)...';
+            }
+
+            try {
+                const response = await fetch('/switch_model', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: modelType })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Wait for model to be fully ready
+                    await waitForModelReady();
+                    currentModel.textContent = modelType;
+                } else {
+                    currentModel.textContent = 'Error';
+                    showError('Failed to load model');
+                }
+            } catch (error) {
+                currentModel.textContent = 'Error';
+                showError('Failed to switch model');
+            } finally {
+                modelSelector.classList.remove('model-loading');
+            }
+        }
+        
+        async function waitForModelReady(maxAttempts = 30) {
+            for (let i = 0; i < maxAttempts; i++) {
+                try {
+                    const response = await fetch('/model_status');
+                    const status = await response.json();
+                    if (status.ready && !status.loading) {
+                        return true;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                } catch (e) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+            return false;
+        }
+
+        function showLoading() {
+            resultsSection.innerHTML = '<div class="loading"><span class="loading-spinner"></span>Searching...</div>';
+        }
+
+        function showError(message) {
+            resultsSection.innerHTML = `<div class="error-msg">${message}</div>`;
+        }
+
+        function showResults(results, query) {
+            if (!results || results.length === 0) {
+                resultsSection.innerHTML = '<div class="empty-state">No results found</div>';
+                return;
+            }
+
+            let html = `
+                <div class="results-header">
+                    <span class="results-title">Top 10 Results</span>
+                    <span class="results-query">"${query}"</span>
+                </div>
+            `;
+
+            results.forEach(r => {
+                html += `
+                    <div class="result-item">
+                        <div class="result-rank">${r.rank}</div>
+                        <div class="result-content">
+                            <p class="result-text">${r.text}</p>
+                            <p class="result-score">Score: <span>${r.score.toFixed(4)}</span></p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            resultsSection.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
